@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DON'T TURN OFF THE LIGHTS</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Creepster&display=swap">
+
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+
+<!-- INTRO -->
+<div id="intro-screen">
+    <div id="intro-title">DON'T TURN OFF<br>THE LIGHTS</div>
+    <div id="intro-rules">
+      Each night something waits outside your door.<br>
+      <b>Peek through the peephole</b> to identify it.<br><br>
+      <span class="r">🔴 Monster outside</span> → turn <b>OFF</b> the lights to repel it<br>
+      <span class="r">👻 Ghost inside room</span> → use the <b>✝ CROSS</b> to banish it<br>
+      <span class="g">🟢 Neighbor outside</span> → <b>open the door</b> to survive<br>
+      <span style="color:#776655;">⚪ Nothing</span> → you are safe either way<br><br>
+      <span style="color:#332211;font-size:11px;">⚠ Opening door to monster = instant death<br>Lights off with ghost inside = death · Cross only banishes ghost inside</span><br><br>
+      <span style="color:#332211;font-size:11px;">survive 10 nights — 3 lives</span>
+    </div>
+    <button class="game-btn" onclick="startGame()">ENTER THE ROOM</button>
+  </div>
+  
+  <!-- ROOM -->
+  <div id="room" class="lit">
+    <div id="ceiling"></div>
+    <div id="floor"></div>
+  
+    <div id="lamp-wrap">
+      <div id="lamp-cord"></div>
+      <div id="lamp-shade"></div>
+      <div id="lamp-glow"></div>
+    </div>
+    <div id="light-cone"></div>
+  
+    <!-- GHOST — z-index 20, above vignette (15) -->
+    <div id="room-ghost">
+      <svg width="200" height="280" viewBox="0 0 200 280" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="gf1" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="5" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="gf2" x="-60%" y="-60%" width="220%" height="220%">
+            <feGaussianBlur stdDeviation="12"/>
+          </filter>
+          <radialGradient id="gg1" cx="50%" cy="38%" r="52%">
+            <stop offset="0%" stop-color="rgba(160,175,230,0.55)"/>
+            <stop offset="60%" stop-color="rgba(100,115,200,0.30)"/>
+            <stop offset="100%" stop-color="rgba(40,50,140,0.05)"/>
+          </radialGradient>
+          <radialGradient id="gg2" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="rgba(180,190,255,0.8)"/>
+            <stop offset="100%" stop-color="rgba(80,100,220,0.1)"/>
+          </radialGradient>
+        </defs>
+        <!-- outer glow blob -->
+        <ellipse cx="100" cy="120" rx="90" ry="110" fill="rgba(60,80,220,0.12)" filter="url(#gf2)"/>
+        <!-- main shroud body -->
+        <path d="M28 110 Q25 55 100 30 Q175 55 172 110 L172 210
+                 Q158 198 148 210 Q138 198 128 210 Q118 198 108 210
+                 Q98 198 88 210 Q78 198 68 210 Q58 198 48 210
+                 Q38 198 28 210 Z"
+              fill="url(#gg1)" stroke="rgba(140,160,255,0.45)" stroke-width="1.5" filter="url(#gf1)"/>
+        <!-- face glow -->
+        <ellipse cx="100" cy="95" rx="52" ry="58" fill="rgba(180,190,255,0.18)" filter="url(#gf1)"/>
+        <!-- LEFT eye socket -->
+        <ellipse cx="76" cy="95" rx="18" ry="22" fill="rgba(5,5,20,0.9)"/>
+        <!-- RIGHT eye socket -->
+        <ellipse cx="124" cy="95" rx="18" ry="22" fill="rgba(5,5,20,0.9)"/>
+        <!-- left iris glow -->
+        <ellipse cx="76" cy="95" rx="12" ry="15" fill="rgba(80,100,255,0.85)" filter="url(#gf1)"/>
+        <ellipse cx="124" cy="95" rx="12" ry="15" fill="rgba(80,100,255,0.85)" filter="url(#gf1)"/>
+        <!-- bright iris center -->
+        <ellipse cx="76" cy="95" rx="7" ry="9" fill="rgba(150,180,255,1)"/>
+        <ellipse cx="124" cy="95" rx="7" ry="9" fill="rgba(150,180,255,1)"/>
+        <!-- pupils -->
+        <ellipse cx="76" cy="96" rx="3.5" ry="5" fill="#000"/>
+        <ellipse cx="124" cy="96" rx="3.5" ry="5" fill="#000"/>
+        <!-- eye glints -->
+        <circle cx="73" cy="91" r="2" fill="rgba(255,255,255,0.7)"/>
+        <circle cx="121" cy="91" r="2" fill="rgba(255,255,255,0.7)"/>
+        <!-- mouth — gaping dark hollow -->
+        <path d="M72 122 Q100 140 128 122 Q124 152 100 158 Q76 152 72 122 Z"
+              fill="rgba(0,0,10,0.92)" stroke="rgba(100,120,255,0.4)" stroke-width="1"/>
+        <!-- inner mouth glow -->
+        <ellipse cx="100" cy="138" rx="18" ry="10" fill="rgba(50,60,200,0.3)" filter="url(#gf1)"/>
+        <!-- wispy tendrils at bottom -->
+        <path d="M50 200 Q42 230 38 260" stroke="rgba(120,140,230,0.35)" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M72 210 Q68 240 65 268" stroke="rgba(120,140,230,0.28)" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M100 215 Q100 245 100 275" stroke="rgba(130,150,240,0.3)" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M128 210 Q132 240 135 268" stroke="rgba(120,140,230,0.28)" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M150 200 Q158 230 162 260" stroke="rgba(120,140,230,0.35)" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <!-- spectral shimmer lines -->
+        <path d="M55 70 Q58 90 54 110" stroke="rgba(180,200,255,0.15)" stroke-width="2" fill="none"/>
+        <path d="M145 65 Q142 88 146 108" stroke="rgba(180,200,255,0.12)" stroke-width="2" fill="none"/>
+      </svg>
+    </div>
+  
+    <!-- Scratches z-index 20 -->
+    <svg id="scratches" style="position:absolute;right:280px;top:30%;z-index:20;opacity:0;pointer-events:none;transition:opacity 1s;" width="70" height="120" viewBox="0 0 70 120">
+      <line x1="10" y1="5"  x2="35" y2="115" stroke="#cc0000" stroke-width="1.8" opacity="0.7"/>
+      <line x1="22" y1="0"  x2="50" y2="110" stroke="#aa0000" stroke-width="1.2" opacity="0.6"/>
+      <line x1="5"  y1="12" x2="22" y2="108" stroke="#880000" stroke-width="0.9" opacity="0.5"/>
+      <line x1="40" y1="0"  x2="65" y2="100" stroke="#cc0000" stroke-width="1.4" opacity="0.6"/>
+      <line x1="32" y1="18" x2="58" y2="118" stroke="#770000" stroke-width="1.0" opacity="0.45"/>
+      <line x1="18" y1="30" x2="28" y2="80"  stroke="#ff2200" stroke-width="0.6" opacity="0.4"/>
+    </svg>
+  
+    <!-- Door -->
+    <div id="door-area" onclick="openPeep()" title="Click to peek">
+      <div id="door-frame-el"></div>
+      <div id="door-el">
+        <div class="door-panel dp-top"></div>
+        <div class="door-panel dp-bot"></div>
+        <div id="door-knob-el"></div>
+      </div>
+    </div>
+    <div class="label" style="right:160px;bottom:390px;font-size:9px;">PEEPHOLE</div>
+    <div class="label" style="right:140px;bottom:340px;">CLICK TO PEEK</div>
+    <div id="peephole-el" onclick="openPeep()" title="Peek through"></div>
+    <button id="open-door-btn" onclick="openDoorAction()">OPEN DOOR</button>
+    <div id="neighbor-hint"></div>
+  
+    <!-- Light switch -->
+    <div id="switch-area" onclick="toggleLight()">
+      <div id="switch-plate"><div id="switch-toggle"></div></div>
+      <div id="switch-lbl">LIGHT SWITCH</div>
+    </div>
+    <div class="label" style="left:90px;top:calc(35% + 80px);">CLICK TO TOGGLE</div>
+  
+    <!-- Cross -->
+    <div id="cross-item" onclick="useCross()" title="Use Holy Cross — banishes ghost">
+      <svg width="56" height="56" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="28" cy="28" rx="26" ry="26" fill="rgba(200,180,80,0.07)"/>
+        <rect x="23" y="5" width="10" height="46" rx="3" fill="#d4b84a" stroke="#8a7028" stroke-width="0.8"/>
+        <rect x="8"  y="16" width="40" height="10" rx="3" fill="#d4b84a" stroke="#8a7028" stroke-width="0.8"/>
+        <rect x="24.5" y="6" width="3" height="44" rx="1.5" fill="rgba(255,245,190,0.4)"/>
+        <rect x="9"  y="17.5" width="38" height="3" rx="1.5" fill="rgba(255,245,190,0.4)"/>
+      </svg>
+    </div>
+    <div class="label label-cross">HOLY CROSS · CLICK (C)</div>
+  
+    <div id="vignette"></div>
+  
+    <!-- HUD -->
+    <div id="hud">
+      <div class="hud-box">NIGHT <span id="night-num">1</span> / 10</div>
+      <div class="hud-box" style="display:flex;align-items:center;gap:6px;"><div id="hearts-row"></div></div>
+      <div class="hud-box">SURVIVED <span id="survived-num">0</span></div>
+    </div>
+  
+    <div id="announce"><div id="announce-title">—</div><div id="announce-sub"></div></div>
+    <div id="instructions">PEEPHOLE · LIGHT SWITCH · ✝ CROSS — keys: P · L · C · O</div>
+  </div>
+  
+  <!-- PEEPHOLE OVERLAY -->
+  <div id="peep-overlay" onclick="handlePeepOverlayClick(event)">
+    <div id="peep-circle" onclick="event.stopPropagation()">
+      <div id="hall-bg">
+        <svg width="300" height="300" viewBox="0 0 300 300" style="position:absolute;inset:0;">
+          <line x1="150" y1="120" x2="0"   y2="300" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+          <line x1="150" y1="120" x2="300" y2="300" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+          <line x1="0"   y1="185" x2="300" y2="185" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+          <line x1="0"   y1="220" x2="300" y2="220" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+        </svg>
+        <div id="hall-ceiling-line"></div>
+        <div id="hall-floor"></div>
+        <div id="hall-light"></div>
+        <div id="hall-far-door"></div>
+        <div id="monster-shadow"></div>
+        <div id="hall-monster">
+          <svg width="100" height="150" viewBox="0 0 100 150" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="50" cy="100" rx="32" ry="44" fill="#150a0a"/>
+            <rect x="40" y="58" width="20" height="20" fill="#150a0a"/>
+            <ellipse cx="50" cy="46" rx="26" ry="30" fill="#1a0c0c"/>
+            <ellipse cx="38" cy="40" rx="9" ry="11" fill="#0d0505"/><ellipse cx="62" cy="40" rx="9" ry="11" fill="#0d0505"/>
+            <ellipse cx="38" cy="40" rx="6" ry="7" fill="#cc0000"/><ellipse cx="62" cy="40" rx="6" ry="7" fill="#cc0000"/>
+            <ellipse cx="38" cy="40" rx="3" ry="4" fill="#ff2200"/><ellipse cx="62" cy="40" rx="3" ry="4" fill="#ff2200"/>
+            <circle cx="38" cy="40" r="1.5" fill="#000"/><circle cx="62" cy="40" r="1.5" fill="#000"/>
+            <circle cx="36" cy="38" r="1" fill="rgba(255,255,255,0.3)"/><circle cx="60" cy="38" r="1" fill="rgba(255,255,255,0.3)"/>
+            <path d="M28 68 Q50 84 72 68" fill="none" stroke="#550000" stroke-width="2"/>
+            <path d="M33 68 L30 76 M40 72 L39 80 M50 74 L50 82 M60 72 L61 80 M67 68 L70 76" stroke="#cc4444" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+            <path d="M18 90 Q0 110 6 130" stroke="#150a0a" stroke-width="12" fill="none" stroke-linecap="round"/>
+            <path d="M82 90 Q100 110 94 130" stroke="#150a0a" stroke-width="12" fill="none" stroke-linecap="round"/>
+            <path d="M6 130 L0 140 M6 130 L6 142 M6 130 L13 140" stroke="#880000" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <path d="M94 130 L88 140 M94 130 L94 142 M94 130 L100 140" stroke="#880000" stroke-width="2" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div id="hall-neighbor">
+          <svg width="80" height="130" viewBox="0 0 80 130" xmlns="http://www.w3.org/2000/svg">
+            <rect x="20" y="70" width="40" height="55" rx="4" fill="#2a3a2a"/>
+            <rect x="28" y="70" width="24" height="55" rx="2" fill="#334433"/>
+            <ellipse cx="40" cy="52" rx="20" ry="22" fill="#c8a882"/>
+            <ellipse cx="40" cy="34" rx="21" ry="12" fill="#3a2810"/>
+            <rect x="19" y="34" width="5" height="20" rx="2" fill="#3a2810"/>
+            <rect x="56" y="34" width="5" height="20" rx="2" fill="#3a2810"/>
+            <ellipse cx="33" cy="50" rx="4" ry="4.5" fill="#fff"/><ellipse cx="47" cy="50" rx="4" ry="4.5" fill="#fff"/>
+            <circle cx="33" cy="51" r="2.5" fill="#5a3820"/><circle cx="47" cy="51" r="2.5" fill="#5a3820"/>
+            <circle cx="32" cy="50" r="0.8" fill="#fff"/><circle cx="46" cy="50" r="0.8" fill="#fff"/>
+            <path d="M32 60 Q40 66 48 60" fill="none" stroke="#a07050" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M20 85 Q8 90 10 105" stroke="#2a3a2a" stroke-width="10" fill="none" stroke-linecap="round"/>
+            <path d="M60 85 Q72 80 70 95" stroke="#2a3a2a" stroke-width="10" fill="none" stroke-linecap="round"/>
+            <ellipse cx="10" cy="107" rx="7" ry="6" fill="#c8a882"/>
+            <rect x="66" y="82" width="5" height="18" rx="1" fill="#d4a04a"/>
+            <ellipse cx="68" cy="80" rx="4" ry="6" fill="#ffdd44" opacity="0.9"/>
+            <ellipse cx="68" cy="78" rx="2" ry="3" fill="#fff" opacity="0.6"/>
+          </svg>
+        </div>
+        <div id="hall-rim"></div>
+      </div>
+    </div>
+    <div id="peep-actions">
+      <button class="peep-act-btn" onclick="closePeepOnly()">STOP PEEKING</button>
+      <button class="peep-act-btn green" id="btn-open-door-peep" onclick="openDoorFromPeep()">OPEN DOOR</button>
+    </div>
+    <div id="peep-hint">identify what is outside — then decide</div>
+  </div>
+  
+  <!-- JUMPSCARE FACE -->
+  <div id="jumpscare-overlay">
+    <div id="jumpscare-face">
+      <svg width="440" height="440" viewBox="0 0 440 440" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="jf1"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <filter id="jf2"><feGaussianBlur stdDeviation="9"/></filter>
+          <radialGradient id="jfg" cx="50%" cy="42%" r="52%">
+            <stop offset="0%" stop-color="#2a0a0a"/>
+            <stop offset="100%" stop-color="#060101"/>
+          </radialGradient>
+        </defs>
+        <ellipse cx="220" cy="205" rx="182" ry="196" fill="rgba(120,0,0,0.22)" filter="url(#jf2)"/>
+        <ellipse cx="220" cy="192" rx="152" ry="162" fill="url(#jfg)" stroke="#3a0000" stroke-width="2"/>
+        <path d="M108 252 Q130 342 220 354 Q310 342 332 252" fill="url(#jfg)" stroke="#3a0000" stroke-width="1.5"/>
+        <!-- forehead cracks -->
+        <path d="M208 72 L203 118 L220 136 L215 158" stroke="#770000" stroke-width="1.4" fill="none" opacity="0.65"/>
+        <path d="M235 76 L239 104 L224 118" stroke="#660000" stroke-width="1" fill="none" opacity="0.5"/>
+        <path d="M182 82 L176 116 L193 130" stroke="#550000" stroke-width="0.9" fill="none" opacity="0.45"/>
+        <!-- eye sockets -->
+        <ellipse cx="152" cy="188" rx="52" ry="56" fill="#020000"/>
+        <ellipse cx="288" cy="188" rx="52" ry="56" fill="#020000"/>
+        <ellipse cx="152" cy="188" rx="54" ry="58" fill="none" stroke="#660000" stroke-width="1.5" opacity="0.5"/>
+        <ellipse cx="288" cy="188" rx="54" ry="58" fill="none" stroke="#660000" stroke-width="1.5" opacity="0.5"/>
+        <!-- red irises -->
+        <ellipse cx="152" cy="188" rx="34" ry="38" fill="#bb0000" filter="url(#jf1)"/>
+        <ellipse cx="288" cy="188" rx="34" ry="38" fill="#bb0000" filter="url(#jf1)"/>
+        <ellipse cx="152" cy="188" rx="20" ry="24" fill="#ff1800"/>
+        <ellipse cx="288" cy="188" rx="20" ry="24" fill="#ff1800"/>
+        <ellipse cx="152" cy="188" rx="9" ry="11" fill="#000"/>
+        <ellipse cx="288" cy="188" rx="9" ry="11" fill="#000"/>
+        <ellipse cx="144" cy="178" rx="5" ry="6" fill="rgba(255,200,200,0.55)"/>
+        <ellipse cx="280" cy="178" rx="5" ry="6" fill="rgba(255,200,200,0.55)"/>
+        <!-- nose -->
+        <path d="M206 238 Q220 255 234 238 L230 272 Q220 283 210 272 Z" fill="#080101" stroke="#3a0000" stroke-width="1"/>
+        <!-- mouth -->
+        <path d="M124 300 Q150 278 176 292 Q194 303 220 306 Q246 303 264 292 Q290 278 316 300 Q305 354 283 376 Q252 398 220 400 Q188 398 157 376 Q135 354 124 300 Z" fill="#080000" stroke="#770000" stroke-width="2"/>
+        <!-- top teeth -->
+        <path d="M150 296 L153 322 L168 320 L166 294" fill="#cccaaa" stroke="#888866" stroke-width="0.8"/>
+        <path d="M175 291 L177 320 L192 319 L191 290" fill="#cccaaa" stroke="#888866" stroke-width="0.8"/>
+        <path d="M200 289 L200 319 L215 319 L215 288" fill="#cccaaa" stroke="#888866" stroke-width="0.8"/>
+        <path d="M225 288 L226 319 L241 319 L240 289" fill="#cccaaa" stroke="#888866" stroke-width="0.8"/>
+        <path d="M250 291 L250 320 L265 319 L263 292" fill="#cccaaa" stroke="#888866" stroke-width="0.8"/>
+        <path d="M272 295 L271 320 L286 320 L287 297" fill="#cccaaa" stroke="#888866" stroke-width="0.8"/>
+        <!-- bottom teeth -->
+        <path d="M162 372 L165 344 L180 345 L176 373" fill="#bbbb98" stroke="#888866" stroke-width="0.8"/>
+        <path d="M188 379 L189 347 L204 347 L202 380" fill="#bbbb98" stroke="#888866" stroke-width="0.8"/>
+        <path d="M213 380 L213 348 L228 348 L227 380" fill="#bbbb98" stroke="#888866" stroke-width="0.8"/>
+        <path d="M238 380 L239 347 L254 347 L251 379" fill="#bbbb98" stroke="#888866" stroke-width="0.8"/>
+        <path d="M262 373 L266 344 L280 345 L276 372" fill="#bbbb98" stroke="#888866" stroke-width="0.8"/>
+        <!-- blood drips -->
+        <path d="M168 324 Q164 344 166 360 Q167 370 164 378" stroke="#aa0000" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M205 321 Q202 346 204 364" stroke="#990000" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M248 321 Q252 340 250 358" stroke="#aa0000" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <!-- veins -->
+        <path d="M160 115 Q148 138 152 166" stroke="#6a0000" stroke-width="1" fill="none" opacity="0.45"/>
+        <path d="M280 118 Q292 140 288 168" stroke="#6a0000" stroke-width="1" fill="none" opacity="0.45"/>
+        <path d="M220 84 Q232 108 226 138" stroke="#5a0000" stroke-width="0.9" fill="none" opacity="0.38"/>
+        <ellipse cx="220" cy="205" rx="152" ry="162" fill="none" stroke="rgba(60,0,0,0.35)" stroke-width="14"/>
+      </svg>
+    </div>
+  </div>
+  
+  <!-- FLASHES -->
+  <div id="red-flash"></div>
+  <div id="green-flash"></div>
+  <div id="cross-flash"></div>
+  
+  <!-- DEATH -->
+  <div id="death-screen">
+    <div id="death-title">YOU DIED</div>
+    <div id="death-body"></div>
+    <div id="death-flavor"></div>
+    <button class="game-btn" onclick="restartGame()">TRY AGAIN</button>
+  </div>
+  
+  <!-- WIN -->
+  <div id="win-screen">
+    <div id="win-title">YOU SURVIVED</div>
+    <div id="win-body"></div>
+    <button class="game-btn" onclick="restartGame()">PLAY AGAIN</button>
+  </div>
+  
+  <!-- AUDIO CONTROLS -->
+  <div id="audio-bar">
+    <label>♪ AMBIANCE</label>
+  
+    <input
+      type="range"
+      id="vol-slider"
+      min="0"
+      max="1"
+      step="0.05"
+      value="0.38"
+      oninput="setVol(this.value)"
+    >
+  
+    <button id="mute-btn" onclick="toggleMute()">
+      MUTE
+    </button>
+  </div>
+
+<!-- ROOM -->
+<div id="room" class="lit">
+
+  <!-- CEILING -->
+  <div id="ceiling"></div>
+
+  <!-- FLOOR -->
+  <div id="floor"></div>
+
+  <!-- LAMP -->
+  <div id="lamp-wrap">
+    <div id="lamp-cord"></div>
+    <div id="lamp-shade"></div>
+    <div id="lamp-glow"></div>
+  </div>
+
+  <div id="light-cone"></div>
+
+  <!-- DOOR -->
+  <div id="door-area">
+    <div id="door-frame"></div>
+
+    <div id="door">
+      <div class="door-panel top"></div>
+      <div class="door-panel bottom"></div>
+      <div id="door-knob"></div>
+    </div>
+  </div>
+
+  <!-- SWITCH -->
+  <div id="switch-area">
+    <div id="switch-plate">
+      <div id="switch-toggle"></div>
+    </div>
+  </div>
+
+  <!-- CROSS -->
+  <div id="cross-item">
+    ✝
+  </div>
+
+  <!-- HUD -->
+  <div id="hud">
+
+    <div class="hud-box">
+      NIGHT <span id="night-num">1</span>
+    </div>
+
+    <div class="hud-box">
+      ♥ <span id="lives-num">3</span>
+    </div>
+
+    <div class="hud-box">
+      SURVIVED <span id="survived-num">0</span>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- AUDIO -->
+<div id="audio-bar">
+
+  <label>♪ AMBIANCE</label>
+
+  <input
+    type="range"
+    id="vol-slider"
+    min="0"
+    max="1"
+    step="0.05"
+    value="0.3"
+  >
+
+  <button id="mute-btn">
+    MUTE
+  </button>
+
+</div>
+
+<script src="./js/state.js"></script>
+<script src="./js/audio/backgroundmusic.js"></script>
+<script src="./js/ui.js"></script>
+<script src="./js/gameplay.js"></script>
+<script src="./js/main.js"></script>
+<script src="./js/audio/ingamemusic.js"></script>
+
+</body>
+</html>
