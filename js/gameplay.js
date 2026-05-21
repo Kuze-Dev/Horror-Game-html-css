@@ -249,8 +249,8 @@ function toggleLight(){
     $('intro-screen').style.display='none';G.started=true;buildHearts();startNight();
   }
   function restartGame(){
+    G={night:1,lives:3,survived:0,lightsOn:true,peeking:false,scenario:S.EMPTY,peekRevealed:false,canAct:false,gameOver:false,started:true,crossUsed:false,nightToken:0};
     startMusic();
-    G={night:1,lives:3,survived:0,lightsOn:true,peeking:false,scenario:S.EMPTY,peekRevealed:false,canAct:false,gameOver:false,started:true,crossUsed:false};
     $('death-screen').classList.remove('show');$('win-screen').classList.remove('show');$('peep-overlay').classList.remove('show');
     clearHints();buildHearts();$('survived-num').textContent=0;$('night-num').textContent=1;startNight();
   }
