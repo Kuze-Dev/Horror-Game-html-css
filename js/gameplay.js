@@ -37,12 +37,14 @@ function startGame(){
   }  
   
   function startNight(){
-    stopKnockSound();
-  
+    stopKnockSound();  
     G.nightToken++;
 
     if(G.night>TOTAL_NIGHTS){winGame();return;}
-    G.canAct=false;G.peekRevealed=false;G.crossUsed=false;
+    G.canAct=false;
+    G.peekRevealed=false;
+    G.crossUsed=false;
+    G.scenarioResolved=false;
     clearHints();$('night-num').textContent=G.night;
   
     const roll=Math.random();
@@ -73,7 +75,7 @@ function startGame(){
     const flavors={
       [S.EMPTY]:['NIGHT '+G.night,'silence fills the hallway...'],
       [S.MONSTER_OUTSIDE]:['NIGHT '+G.night,'something is knocking at your door...'],
-      [S.MONSTER_INSIDE]:['NIGHT '+G.night,'you are not alone in this room...'],
+      [S.MONSTER_INSIDE]:['NIGHT '+G.night,'silence fills the hallway...'],
       [S.NEIGHBOR]:['NIGHT '+G.night,'something is knocking at your door...'],
     };
     const[t,s]=flavors[G.scenario];
@@ -82,53 +84,24 @@ function startGame(){
     setTimeout(()=>{
       G.canAct=true;
     
-      if(G.scenario===S.MONSTER_INSIDE){
-        
-        let countdown = 7;
+    const D = DIFFICULTY[G.difficulty];
 
-        const timer = gameInterval(() => {
-        
-          if(G.crossUsed){
-            clearInterval(timer);
-            return;
-          }
-        
-          countdown--;
-        
-          if(countdown <= 0){
-        
-            clearInterval(timer);
-        
-            if(!G.canAct) return;
-        
-            G.canAct = false;
-        
-            flickerThen(() => {
-              gameTimeout(() => {
-                triggerDeath("You die ghost is inside, you didn't repel the ghost");
-              }, 760);
-            });
-          }
-        
-        }, 1000);
-    
-      }
+    startDeathCountdown(D.insideTimer);
     
     },2000);
   }
+
+  //must separate
+
+  function setDifficulty(mode){
+
+    G.difficulty = mode;
   
-  function toggleLight(){
-  
-    if(!G.started) return;
-  
-    if(G.lightsOn){
-  
-      setLights(false);
-  
-    }else{
-  
-      setLights(true);
-    }
+    announce(
+      'DIFFICULTY',
+      mode.toUpperCase(),
+      200
+    );
   }
   
   function useCross(){
@@ -145,6 +118,8 @@ function startGame(){
     $('scratches').classList.remove('show');
     setTimeout(()=>{
       G.survived++;$('survived-num').textContent=G.survived;
+      G.scenarioResolved = true;
+      clearInterval(G.timerInterval);
       announce('GHOST BANISHED','the holy light drove it into the dark.',300);
       setTimeout(()=>{G.night++;startNight();},2800);
     },950);
@@ -176,6 +151,8 @@ function openDoorAction(){
     $('door-el').classList.add('opening');flashGreen();
     setTimeout(()=>{
       $('door-el').classList.remove('opening');G.survived++;$('survived-num').textContent=G.survived;
+      G.scenarioResolved = true;
+      clearInterval(G.timerInterval);
       announce('NEIGHBOR SAFE','they were just frightened too...',200);
       setTimeout(()=>{G.night++;startNight();},2800);
     },800);
@@ -192,6 +169,8 @@ function openDoorAction(){
     $('door-el').classList.add('opening');flashGreen();
     setTimeout(()=>{
       $('door-el').classList.remove('opening');G.survived++;$('survived-num').textContent=G.survived;
+      G.scenarioResolved = true;
+      clearInterval(G.timerInterval);
       announce('ALL CLEAR','nobody was there...',300);
       setTimeout(()=>{G.night++;startNight();},2600);
     },700);
@@ -211,6 +190,8 @@ function toggleLight(){
       setTimeout(()=>{
         flickerThen(()=>{
           setLights(true);G.survived++;$('survived-num').textContent=G.survived;
+          G.scenarioResolved = true;
+          clearInterval(G.timerInterval);
           announce('MONSTER FLED','the darkness confused it... you are safe.',200);
           setTimeout(()=>{G.night++;startNight();},2800);
         });
@@ -220,6 +201,8 @@ function toggleLight(){
       setTimeout(()=>playJumpscare(),55);
       setTimeout(()=>triggerDeath('you turned off the lights.','your neighbor was keeping it at bay.\nwithout the light, it found you.'),760);
     } else {
+      G.scenarioResolved = true;
+      clearInterval(G.timerInterval);
       setLights(false);announce('ALL CLEAR','nothing stirs tonight...',400);
       setTimeout(()=>{setLights(true);G.survived++;$('survived-num').textContent=G.survived;setTimeout(()=>{G.night++;startNight();},2400);},1800);
     }
@@ -246,10 +229,19 @@ function toggleLight(){
     $('win-screen').classList.add('show');
   }
   function startGame(){
-    $('intro-screen').style.display='none';G.started=true;buildHearts();startNight();
+    G.difficulty = $('difficulty-select').value;
+
+    $('intro-screen').style.display='none';
+
+    G.started=true;
+
+    buildHearts();
+
+    startNight();
   }
   function restartGame(){
-    G={night:1,lives:3,survived:0,lightsOn:true,peeking:false,scenario:S.EMPTY,peekRevealed:false,canAct:false,gameOver:false,started:true,crossUsed:false,nightToken:0};
+    G={night:1,lives:3,survived:0,lightsOn:true,peeking:false,scenario:S.EMPTY,peekRevealed:false,canAct:false,gameOver:false,started:true,crossUsed:false,nightToken:0,insideTimer:0};
+    clearInterval(G.timerInterval);
     startMusic();
     $('death-screen').classList.remove('show');$('win-screen').classList.remove('show');$('peep-overlay').classList.remove('show');
     clearHints();buildHearts();$('survived-num').textContent=0;$('night-num').textContent=1;startNight();
@@ -284,3 +276,129 @@ function toggleLight(){
     if(e.key==='c'||e.key==='C')useCross();
     if(e.key==='Escape')closePeepOnly();
   });
+
+function startDeathCountdown(seconds){
+
+  clearInterval(G.timerInterval);
+
+  let countdown = seconds;
+
+  $('timer-num').textContent = countdown;
+
+  G.timerInterval = gameInterval(() => {
+
+    if(G.gameOver){
+      clearInterval(G.timerInterval);
+      return;
+    }
+
+    countdown--;
+
+    $('timer-num').textContent = countdown;
+
+    // RED WARNING
+    if(countdown <= 2){
+
+      $('timer-num').classList.add('danger');
+
+    } else {
+
+      $('timer-num').classList.remove('danger');
+
+    }
+
+    // SUCCESS CONDITIONS
+    if(
+      G.crossUsed ||
+      G.scenarioResolved
+    ){
+      clearInterval(G.timerInterval);
+      return;
+    }
+
+    // TIMER ENDS
+    if(countdown <= 0){
+
+      clearInterval(G.timerInterval);
+
+      G.canAct = false;
+
+      switch(G.scenario){
+
+        case S.MONSTER_OUTSIDE:
+
+          flashRed();
+
+          playJumpscare();
+
+          gameTimeout(() => {
+
+            triggerDeath(
+              'You hesitated.',
+              'the creature outside finally entered.'
+            );
+
+          }, 700);
+
+        break;
+
+        case S.MONSTER_INSIDE:
+
+          flashRed();
+
+          playJumpscare();
+
+          gameTimeout(() => {
+
+            triggerDeath(
+              'You died.',
+              'the ghost was already inside.'
+            );
+
+          }, 700);
+
+        break;
+
+        case S.NEIGHBOR:
+
+          flashRed();
+
+          gameTimeout(() => {
+
+            triggerDeath(
+              'Too late.',
+              'your neighbor left... and something else came instead.'
+            );
+
+          }, 700);
+
+        break;
+
+        case S.EMPTY:
+
+          announce(
+            'SAFE...',
+            'nothing happened tonight.',
+            200
+          );
+
+          G.survived++;
+
+          $('survived-num').textContent = G.survived;
+
+          gameTimeout(() => {
+
+            G.night++;
+
+            startNight();
+
+          }, 2200);
+
+        break;
+      }
+    }
+
+  },1000);
+
+  return G.timerInterval;
+}

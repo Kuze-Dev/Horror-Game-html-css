@@ -3,6 +3,7 @@ let masterGain;
 let currentSource = null;
 
 let audioStarted = false;
+let musicBuffer = false;
 let muted = false;
 let volume = 0.38;
 
