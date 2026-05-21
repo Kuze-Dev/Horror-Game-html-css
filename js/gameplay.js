@@ -24,7 +24,6 @@ function startGame(){
     if(G.scenario===S.MONSTER_INSIDE){
       setTimeout(()=>{
         $('scratches').classList.add('show');$('scratches').style.opacity='1';
-       /* let CSS class handle it */
       },1400);
     }
     if(G.scenario===S.NEIGHBOR||G.scenario===S.MONSTER_OUTSIDE){
@@ -48,19 +47,45 @@ function startGame(){
   
     setTimeout(()=>{
       G.canAct=true;
+    
       if(G.scenario===S.MONSTER_INSIDE){
+    
         let countdown=7;
+    
         const timer=setInterval(()=>{
-          if(G.gameOver){clearInterval(timer);return;}
-          countdown--;
-          if(countdown<=0){
-            clearInterval(timer);if(!G.canAct)return;G.canAct=false;
-            flickerThen(()=>{
-              setTimeout(()=>triggerDeath('You die ghost is inside, you didn\'t repel the ghost'),760);
-            });
+    
+          if(G.gameOver){
+            clearInterval(timer);
+            return;
           }
+    
+          if(G.crossUsed){
+            clearInterval(timer);
+            return;
+          }
+    
+          countdown--;
+    
+          if(countdown<=0){
+    
+            clearInterval(timer);
+    
+            if(!G.canAct)return;
+    
+            G.canAct=false;
+    
+            flickerThen(()=>{
+              setTimeout(()=>{
+                triggerDeath('You die ghost is inside, you didn\'t repel the ghost');
+              },760);
+            });
+    
+          }
+    
         },1000);
+    
       }
+    
     },2000);
   }
   
@@ -118,7 +143,7 @@ function startGame(){
   
 function openDoorAction(){
   if(!G.canAct||G.gameOver||!G.started)return;
-  G.canAct=false;$('open-door-btn').classList.remove('show');
+  G.canAct=false;
   if(G.scenario===S.NEIGHBOR){
     $('door-el').classList.add('opening');flashGreen();
     setTimeout(()=>{
@@ -127,9 +152,11 @@ function openDoorAction(){
       setTimeout(()=>{G.night++;startNight();},2800);
     },800);
   } else if(G.scenario===S.MONSTER_OUTSIDE||G.scenario===S.MONSTER_INSIDE){
-    $('door-el').classList.add('opening');flashRed();
+    $('door-el').classList.add('opening');
+    flashRed();
     setTimeout(()=>playJumpscare(),60);
     setTimeout(()=>{
+      $('door-el').classList.remove('opening');
       triggerDeath('you opened the door.',
         G.scenario===S.MONSTER_INSIDE?'there were two of them.\none was already inside with you.':'it was waiting for exactly that moment.');
     },750);
@@ -194,6 +221,28 @@ function toggleLight(){
     $('death-screen').classList.remove('show');$('win-screen').classList.remove('show');$('peep-overlay').classList.remove('show');
     clearHints();buildHearts();$('survived-num').textContent=0;$('night-num').textContent=1;startNight();
   }
+
+    /* Cross angelic chime */
+    function playCrossChime(){
+      if(!audioStarted||!audioCtx)return;
+      const t=audioCtx.currentTime;
+      [523,659,784,1047,1318].forEach((f,i)=>{
+        const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+        o.type='sine';o.frequency.value=f;
+        g.gain.setValueAtTime(0,t+i*0.08);g.gain.linearRampToValueAtTime(0.14,t+i*0.08+0.05);g.gain.exponentialRampToValueAtTime(0.001,t+i*0.08+1.4);
+        o.connect(g);g.connect(masterGain);o.start(t+i*0.08);o.stop(t+i*0.08+1.5);
+      });
+    }
+    
+    /* Full jumpscare: shock sound + face + shake */
+    function playJumpscare(){
+      playShockSound();
+      document.body.classList.remove('shaking');void document.body.offsetWidth;document.body.classList.add('shaking');
+      setTimeout(()=>document.body.classList.remove('shaking'),850);
+      const ov=document.getElementById('jumpscare-overlay');
+      ov.classList.remove('show');void ov.offsetWidth;ov.classList.add('show');
+      setTimeout(()=>ov.classList.remove('show'),2100);
+    }
   
   document.addEventListener('keydown',e=>{
     if(e.key==='p'||e.key==='P'){G.peeking?closePeepOnly():openPeep();}

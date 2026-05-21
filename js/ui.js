@@ -1,3 +1,6 @@
+const knockSound = new Audio('./assets/audio/knock.mp3');
+knockSound.volume = 0.8;
+
 function setLights(on){
     G.lightsOn=on;
     $('room').classList.toggle('lit',on);$('room').classList.toggle('dark',!on);
@@ -37,15 +40,23 @@ function flickerThen(cb){
   setTimeout(()=>{$('room').classList.remove('flicker');if(cb)cb();},1400);
 }
 function knockDoor(){
-    const d=$('door-el');d.classList.remove('knocking');void d.offsetWidth;d.classList.add('knocking');
-    setTimeout(()=>d.classList.remove('knocking'),1400);
-  }
+
+  knockSound.currentTime = 0;
+  knockSound.play();
+
+  const d = $('door-el');
+
+  d.classList.remove('knocking');
+  void d.offsetWidth;
+  d.classList.add('knocking');
+
+  setTimeout(() => d.classList.remove('knocking'), 1400);
+}
   
 function clearHints(){
   $('scratches').classList.remove('show');$('scratches').style.opacity='0';
   $('hall-monster').classList.remove('show');$('monster-shadow').classList.remove('show');
   $('hall-neighbor').classList.remove('show');
-  $('open-door-btn').classList.remove('show');$('btn-open-door-peep').classList.remove('show');
   $('neighbor-hint').classList.remove('show');
   const g=$('room-ghost');g.classList.remove('show','repelled');g.style.opacity='0';
   $('cross-item').classList.remove('used');

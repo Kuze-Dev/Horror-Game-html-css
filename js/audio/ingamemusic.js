@@ -92,24 +92,3 @@ function playScare(){
     ckg.gain.value=0.7;cks.buffer=ck;cks.connect(ckg);ckg.connect(masterGain);cks.start(t);
   }
   
-  /* Cross angelic chime */
-  function playCrossChime(){
-    if(!audioStarted||!audioCtx)return;
-    const t=audioCtx.currentTime;
-    [523,659,784,1047,1318].forEach((f,i)=>{
-      const o=audioCtx.createOscillator(),g=audioCtx.createGain();
-      o.type='sine';o.frequency.value=f;
-      g.gain.setValueAtTime(0,t+i*0.08);g.gain.linearRampToValueAtTime(0.14,t+i*0.08+0.05);g.gain.exponentialRampToValueAtTime(0.001,t+i*0.08+1.4);
-      o.connect(g);g.connect(masterGain);o.start(t+i*0.08);o.stop(t+i*0.08+1.5);
-    });
-  }
-  
-  /* Full jumpscare: shock sound + face + shake */
-  function playJumpscare(){
-    playShockSound();
-    document.body.classList.remove('shaking');void document.body.offsetWidth;document.body.classList.add('shaking');
-    setTimeout(()=>document.body.classList.remove('shaking'),850);
-    const ov=document.getElementById('jumpscare-overlay');
-    ov.classList.remove('show');void ov.offsetWidth;ov.classList.add('show');
-    setTimeout(()=>ov.classList.remove('show'),2100);
-  }
