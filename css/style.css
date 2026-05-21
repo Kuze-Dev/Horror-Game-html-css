@@ -95,6 +95,18 @@ body{background:#000;font-family:'Special Elite',cursive;overflow:hidden;width:1
   100%{opacity:0;transform:scale(0.05) rotate(45deg);}
 }
 
+#difficulty-select{
+  position:absolute;
+  top:20px;
+  right:20px;
+  background:#111;
+  color:#fff;
+  border:1px solid #444;
+  padding:8px 12px;
+  font-family:inherit;
+  z-index:999;
+}
+
 /* Ghost ambient glow on room walls when ghost present */
 
 /* ── SCRATCHES ── */

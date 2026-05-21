@@ -19,4 +19,14 @@ let G = {
   nightToken: 0,
 };
 
+const DIFFICULTY = {
+  normal: {
+    insideTimer: 7,
+  },
+
+  hard: {
+    insideTimer: 4,
+  }
+};
+
 const $ = id => document.getElementById(id);

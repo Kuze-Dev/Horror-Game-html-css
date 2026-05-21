@@ -73,7 +73,7 @@ function startGame(){
     const flavors={
       [S.EMPTY]:['NIGHT '+G.night,'silence fills the hallway...'],
       [S.MONSTER_OUTSIDE]:['NIGHT '+G.night,'something is knocking at your door...'],
-      [S.MONSTER_INSIDE]:['NIGHT '+G.night,'you are not alone in this room...'],
+      [S.MONSTER_INSIDE]:['NIGHT '+G.night,'silence fills the hallway...'],
       [S.NEIGHBOR]:['NIGHT '+G.night,'something is knocking at your door...'],
     };
     const[t,s]=flavors[G.scenario];
@@ -84,51 +84,26 @@ function startGame(){
     
       if(G.scenario===S.MONSTER_INSIDE){
         
-        let countdown = 7;
+        const D = DIFFICULTY[G.difficulty];
 
-        const timer = gameInterval(() => {
-        
-          if(G.crossUsed){
-            clearInterval(timer);
-            return;
-          }
-        
-          countdown--;
-        
-          if(countdown <= 0){
-        
-            clearInterval(timer);
-        
-            if(!G.canAct) return;
-        
-            G.canAct = false;
-        
-            flickerThen(() => {
-              gameTimeout(() => {
-                triggerDeath("You die ghost is inside, you didn't repel the ghost");
-              }, 760);
-            });
-          }
-        
-        }, 1000);
+        startDeathCountdown(D.insideTimer);
     
       }
     
     },2000);
   }
+
+  //must separate
+
+  function setDifficulty(mode){
+
+    G.difficulty = mode;
   
-  function toggleLight(){
-  
-    if(!G.started) return;
-  
-    if(G.lightsOn){
-  
-      setLights(false);
-  
-    }else{
-  
-      setLights(true);
-    }
+    announce(
+      'DIFFICULTY',
+      mode.toUpperCase(),
+      200
+    );
   }
   
   function useCross(){
@@ -284,3 +259,46 @@ function toggleLight(){
     if(e.key==='c'||e.key==='C')useCross();
     if(e.key==='Escape')closePeepOnly();
   });
+
+  function startDeathCountdown(seconds){
+
+    let countdown = seconds;
+  
+    const timer = gameInterval(() => {
+  
+      if(G.crossUsed){
+  
+        clearInterval(timer);
+        return;
+      }
+  
+      countdown--;
+  
+      console.log('Countdown:', countdown);
+  
+      if(countdown <= 0){
+  
+        clearInterval(timer);
+  
+        if(!G.canAct) return;
+  
+        G.canAct = false;
+  
+        flickerThen(() => {
+  
+          gameTimeout(() => {
+  
+            triggerDeath(
+              "You died.",
+              "the ghost was already inside."
+            );
+  
+          }, 760);
+  
+        });
+      }
+  
+    }, 1000);
+  
+    return timer;
+  }
