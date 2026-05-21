@@ -21,7 +21,7 @@ let G = {
 
 const DIFFICULTY = {
   normal: {
-    insideTimer: 7,
+    insideTimer: 700,
   },
 
   hard: {
